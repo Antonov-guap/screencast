@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Screen Capture</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+    </style>
+
+</head>
+<body>
+<img id="screen" />
+<script>
+    const screenImg = document.getElementById("screen");
+    const socket = new WebSocket("ws://" + location.host + "/screen");
+    let frames = 0;
+    let lastTime = Date.now();
+
+    socket.onmessage = (event) => {
+        screenImg.src = "data:image/jpeg;base64," + event.data;
+        frames++;
+    };
+
+    socket.onclose = (event) => {
+        console.log("WebSocket closed:", event);
+    };
+
+    socket.onerror = (error) => {
+        console.log("WebSocket error:", error);
+    };
+
+    setInterval(() => {
+        const currentTime = Date.now();
+        const elapsed = currentTime - lastTime;
+        lastTime = currentTime;
+        const fps = Math.round(frames / (elapsed / 1000));
+        console.log(`FPS: ${fps}`);
+        frames = 0;
+    }, 1000);
+</script>
+</body>
+</html>
